@@ -16,11 +16,10 @@ public class Route_REST extends RouteBuilder {
         from("timer:mytimer?repeatCount=1")
                 .toD("https://cat-fact.herokuapp.com/facts" +
                         "?httpMethod=GET")
-                .process(exchange -> {
-                    // Get the HTTP response body
-                    String responseBody = exchange.getIn().getBody(String.class);
 
-                    // Set the response body as the new body of the message
+                .log("Response is ${body}")
+                .process(exchange -> {
+                    String responseBody = exchange.getIn().getBody(String.class);
                     exchange.getIn().setBody(responseBody);
                 })
                 .to("file:target/messages/REST?filename=catFacts.txt");
