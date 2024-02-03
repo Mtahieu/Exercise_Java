@@ -34,25 +34,17 @@ public class MyRouteBuilder extends RouteBuilder {
                 .otherwise()
                 .log("Other message")
                 .to("file:target/messages/others");
-            // Quelle: https://www.youtube.com/watch?v=MvZK2npETeY
-        from("file:src/data?noop=true&antInclude=*.json").setProperty("city")
-                .jsonpath("$.city==London",true)
-                .log("UK JSON").to("file:target/messages/JSONS/uk");
 
-//        // Quelle: https://www.youtube.com/watch?v=MvZK2npETeY
-//        from("file:src/data?noop=true&antInclude=*.json").choice()
-//                // UK JSON
-//                .when().jsonpath("$.city==London",true)
-//                .log("UK JSON")
-//                //.to("file:target/messages/JSONS/uk")
-//                // DE JSON
-//                .when()
-//                .jsonpath("$.city==Karlsruhe",true)
-//                .log("DE JSON")
-//                //.to("file:target/messages/JSONS/de")
-//                .otherwise()
-//                .log("other json")
-//        //.to("file:target/messages/JSONS/others")
+        from("file:src/data?noop=true&antInclude=*.json")//.setProperty("city").jsonpath("$.city")
+                .choice()
+                .when(jsonpath("$[?(@.city == 'London')]"))
+                //.jsonpath("$.city==London",true)
+                .log("UK JSON").to("file:target/messages/JSONS/uk")
+                .when(jsonpath("$[?(@.city == 'Karlsruhe')]"))
+                .log("UK JSON").to("file:target/messages/JSONS/de")
+                .otherwise()
+                .log("other json").to("file:target/messages/JSONS/other")
+
         ;
     }
 
