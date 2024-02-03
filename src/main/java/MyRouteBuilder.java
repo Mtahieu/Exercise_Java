@@ -14,33 +14,46 @@ public class MyRouteBuilder extends RouteBuilder {
 
         // Only .xml files here
         from("file:src/data?noop=true&antInclude=*.xml") //&antInclude=**/*.xml$
-            .choice()
+                .choice()
 
                 //London Handling
                 .when(xpath("/person/city = 'London'")).process(new Processor() {
-            public void process(Exchange exchange) throws Exception {
-                // DRAWBACK: HEADER ETC GETS LOST
-                exchange.getOut().setBody("foo");
-                // do some business logic with the input body
-            }
-        })
-                    .log("UK message")
-                    .to("file:target/messages/uk?fileName=uk.txt")
+                    public void process(Exchange exchange) throws Exception {
+                        // DRAWBACK: HEADER ETC GETS LOST
+                        exchange.getOut().setBody("foo");
+                        // do some business logic with the input body
+                    }
+                })
+                .log("UK message")
+                .to("file:target/messages/uk?fileName=uk.txt")
 
                 // Karlsruhe handling
-                    .when(xpath("/person/city = 'Karlsruhe'"))
-                    .log("DE message")
-                    .to("file:target/messages/de")
-                    .otherwise()
-                    .log("Other message")
-                    .to("file:target/messages/others");
+                .when(xpath("/person/city = 'Karlsruhe'"))
+                .log("DE message")
+                .to("file:target/messages/de")
+                .otherwise()
+                .log("Other message")
+                .to("file:target/messages/others");
+            // Quelle: https://www.youtube.com/watch?v=MvZK2npETeY
+        from("file:src/data?noop=true&antInclude=*.json").setProperty("city")
+                .jsonpath("$.city==London",true)
+                .log("UK JSON").to("file:target/messages/JSONS/uk");
 
-        from("file:src/data?noop=true&antInclude=*.json").choice()
-                .when().simple("${bodyAs(String)} contains 'Karlsruhe'").to("file:target/messages/JSON/de")
-
-                .when().simple("${bodyAs(String)} contains 'London'").to("file:target/messages/JSON/uk")
-
-                .otherwise().to("file:target/messages/JSON/other");
+//        // Quelle: https://www.youtube.com/watch?v=MvZK2npETeY
+//        from("file:src/data?noop=true&antInclude=*.json").choice()
+//                // UK JSON
+//                .when().jsonpath("$.city==London",true)
+//                .log("UK JSON")
+//                //.to("file:target/messages/JSONS/uk")
+//                // DE JSON
+//                .when()
+//                .jsonpath("$.city==Karlsruhe",true)
+//                .log("DE JSON")
+//                //.to("file:target/messages/JSONS/de")
+//                .otherwise()
+//                .log("other json")
+//        //.to("file:target/messages/JSONS/others")
+        ;
     }
 
 }
